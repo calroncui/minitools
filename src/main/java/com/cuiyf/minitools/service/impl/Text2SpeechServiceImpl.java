@@ -31,6 +31,11 @@ public class Text2SpeechServiceImpl implements Text2SpeechService{
         }else{
             text = req.getText();
         }
-        return mainMethod.main(text);
+
+        if(StringUtils.isBlank(text)){
+            logger.error("获取文本为空");
+            throw new OperateException("获取文本为空","200004");
+        }
+        return mainMethod.main(text.trim());
     }
 }

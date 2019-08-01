@@ -32,7 +32,7 @@ public class MainMethod {
 
     public String main(String text){
         String fileName = null;
-
+        String targetName = null;
         try {
 
             String file = System.currentTimeMillis() + "";
@@ -44,13 +44,19 @@ public class MainMethod {
             demo.process(text, new FileOutputStream(out));
 
             // 再转换格式
-            String targetName = mp3FilePrefix + "\\" +  file + ".mp3";
+            targetName = mp3FilePrefix + "\\" +  file + ".mp3";
             new PCM2MP3().parse(fileName,targetName);
 
             demo.shutdown();
         } catch (Exception e) {
             logger.error("语音文件生成失败");
             throw new OperateException("语音文件生成失败","200003");
+        }
+
+        File target = new File(targetName);
+        if(target.length() <= 1000){
+            logger.error("语音文件生成失败,文件过小,"+target.length() +"B");
+            throw new OperateException("语音文件生成失败,文本格式有误","200004");
         }
 
         return fileName;
@@ -64,7 +70,7 @@ public class MainMethod {
             AccessToken token = new AccessToken(akId, akSecret);
             token.apply();
             String accessToken = token.getToken();
-            long expireTime = token.getExpireTime();
+            long expireTime = token.getExpireTime()-60000;
             redisUtil.set(CommonConstant.ALIYUN_TOKEN,accessToken,expireTime);
             return accessToken;
         }

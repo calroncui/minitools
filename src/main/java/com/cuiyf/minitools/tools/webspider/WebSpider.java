@@ -38,7 +38,7 @@ public class WebSpider {
     }
 
     public static String html2text(String html) {
-        return Jsoup.parse(html).text();
+        return Jsoup.parse(html).text().replaceAll("\\\uFEFF", "").replaceAll(" ",",");
     }
 
     public static String getContentByUrl(String url)  {
