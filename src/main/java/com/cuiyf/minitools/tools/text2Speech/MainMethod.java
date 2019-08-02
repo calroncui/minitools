@@ -30,24 +30,29 @@ public class MainMethod {
     @Autowired
     private RedisUtil redisUtil;
 
+    public String executeMethod(String text) throws Exception{
+
+        String file = System.currentTimeMillis() + "";
+
+        // 先输出文件
+        String fileName = pcmFilePrefix + File.separator +  file + ".pcm";
+        SpeechSynthesizerLongTextDemo demo = new SpeechSynthesizerLongTextDemo(appKey, token(), url);
+        File out = new File(fileName);
+        demo.process(text, new FileOutputStream(out));
+
+        // 再转换格式
+        String targetName = mp3FilePrefix + File.separator +  file + ".mp3";
+        new PCM2MP3().parse(fileName,targetName);
+
+        demo.shutdown();
+
+        return targetName;
+    }
+
     public String main(String text){
-        String fileName = null;
         String targetName = null;
         try {
-
-            String file = System.currentTimeMillis() + "";
-
-            // 先输出文件
-            fileName = pcmFilePrefix + "\\" +  file + ".pcm";
-            SpeechSynthesizerLongTextDemo demo = new SpeechSynthesizerLongTextDemo(appKey, token(), url);
-            File out = new File(fileName);
-            demo.process(text, new FileOutputStream(out));
-
-            // 再转换格式
-            targetName = mp3FilePrefix + "\\" +  file + ".mp3";
-            new PCM2MP3().parse(fileName,targetName);
-
-            demo.shutdown();
+            targetName = executeMethod(text);
         } catch (Exception e) {
             logger.error("语音文件生成失败");
             throw new OperateException("语音文件生成失败","200003");
@@ -55,11 +60,23 @@ public class MainMethod {
 
         File target = new File(targetName);
         if(target.length() <= 1000){
-            logger.error("语音文件生成失败,文件过小,"+target.length() +"B");
-            throw new OperateException("语音文件生成失败,文本格式有误","200004");
+
+                redisUtil.del(CommonConstant.ALIYUN_TOKEN);
+                try {
+                    targetName = executeMethod(text);
+                } catch (Exception e) {
+                    logger.error("语音文件生成失败");
+                    throw new OperateException("语音文件生成失败","200003");
+                }
+                target = new File(targetName);
+                if(target.length() <= 1000){
+                    logger.error("语音文件生成失败,文件过小,"+target.length() +"B");
+                    throw new OperateException("语音文件生成失败,文本格式有误","200004");
+                }
+                return targetName;
         }
 
-        return fileName;
+        return targetName;
     }
 
     public String token() throws Exception{
