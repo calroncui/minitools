@@ -1,6 +1,5 @@
 package com.cuiyf.minitools.service.impl;
 
-import com.cuiyf.minitools.controller.Text2SpeechController;
 import com.cuiyf.minitools.exception.OperateException;
 import com.cuiyf.minitools.model.ReqConvert;
 import com.cuiyf.minitools.service.Text2SpeechService;
@@ -32,10 +31,19 @@ public class Text2SpeechServiceImpl implements Text2SpeechService{
             text = req.getText();
         }
 
+        // 做最后的替换
+        // 1.1 换行等替换为逗号
+        text = text.trim().replaceAll("[\\t\\n\\r]", ",");
+
+        // 1.2 一个或者多个空格 替换为逗号
+        text = text.replaceAll("[' ']+", ",");
+
+
         if(StringUtils.isBlank(text)){
             logger.error("获取文本为空");
             throw new OperateException("获取文本为空","200004");
         }
-        return mainMethod.main(text.trim());
+        return mainMethod.main(text);
     }
+
 }

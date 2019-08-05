@@ -41,7 +41,7 @@ public class MainMethod {
         demo.process(text, new FileOutputStream(out));
 
         // 再转换格式
-        String targetName = mp3FilePrefix + File.separator +  file + ".mp3";
+        String targetName = mp3FilePrefix + File.separator +  file + ".wav";
         new PCM2MP3().parse(fileName,targetName);
 
         demo.shutdown();
