@@ -26,6 +26,7 @@ public class CommonExceptionHandler{
         Map map = new HashMap();
         map.put("code", ex.getCode());
         map.put("msg", ex.getMessage());
+        logger.error(null,ex);
         return map;
     }
 
@@ -40,6 +41,7 @@ public class CommonExceptionHandler{
         Map map = new HashMap();
         map.put("code", "200001");
         map.put("msg", "服务不可用");
+        logger.error(null,ex);
         return map;
     }
 
