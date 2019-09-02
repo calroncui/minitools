@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -138,5 +140,51 @@ public class Text2SpeechServiceImpl implements Text2SpeechService{
             }
         }
         return list;
+    }
+
+    @Override
+    public String download(String fileName, HttpServletResponse response) {
+        String filePath = mainMethod.initFilePath(fileName);
+        File file = new File(filePath);
+        if (file.exists()) {
+
+            response.setContentType("application/octet-stream");
+            response.setHeader("content-type", "application/octet-stream");
+            response.setHeader("Content-Disposition", "attachment;fileName=" + fileName + ".mp3");// 设置文件名
+            byte[] buffer = new byte[1024];
+            FileInputStream fis = null;
+            BufferedInputStream bis = null;
+            try {
+                fis = new FileInputStream(file);
+                bis = new BufferedInputStream(fis);
+                OutputStream os = response.getOutputStream();
+                int i = bis.read(buffer);
+                while (i != -1) {
+                    os.write(buffer, 0, i);
+                    i = bis.read(buffer);
+                }
+            } catch (Exception e) {
+                logger.error(null,e);
+                e.printStackTrace();
+            } finally {
+                if (bis != null) {
+                    try {
+                        bis.close();
+                    } catch (IOException e) {
+                        logger.error(null,e);
+                        e.printStackTrace();
+                    }
+                }
+                if (fis != null) {
+                    try {
+                        fis.close();
+                    } catch (IOException e) {
+                        logger.error(null,e);
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

@@ -6,6 +6,7 @@ import com.cuiyf.minitools.constant.CommonConstant;
 import com.cuiyf.minitools.exception.OperateException;
 import com.cuiyf.minitools.service.impl.Text2SpeechServiceImpl;
 import com.cuiyf.minitools.tools.redis.RedisUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,7 @@ public class MainMethod {
     private String akSecret;
     private String appKey;
     private String url;
-    private String pcmFilePrefix;
-    private String mp3FilePrefix;
+    private String filePrefix;
 
     @Autowired
     private RedisUtil redisUtil;
@@ -35,18 +35,26 @@ public class MainMethod {
         String file = System.currentTimeMillis() + "";
 
         // 先输出文件
-        String fileName = pcmFilePrefix + File.separator +  file + ".pcm";
+        String fileName = filePrefix + File.separator  + "pcm" + File.separator +  file + ".pcm";
         SpeechSynthesizerLongTextDemo demo = new SpeechSynthesizerLongTextDemo(appKey, token(), url);
         File out = new File(fileName);
         demo.process(text, new FileOutputStream(out));
 
-        // 再转换格式
-        String targetName = mp3FilePrefix + File.separator +  file + ".wav";
+        // 再转换格式 wav
+        String targetName = filePrefix  + File.separator  + "wav" + File.separator +  file + ".wav";
         new PCM2MP3().parse(fileName,targetName);
+
+        // 再转换格式 mp3
+        String mp3Name = filePrefix  + File.separator  + "mp3" + File.separator +  file + ".mp3";
+        new PCM2MP3().parse(fileName,mp3Name);
 
         demo.shutdown();
 
         return targetName;
+    }
+
+    public String initFilePath(String fileName){
+        return filePrefix  + File.separator  + "mp3" + File.separator +  fileName + ".mp3";
     }
 
     public String main(String text){
@@ -54,18 +62,17 @@ public class MainMethod {
         try {
             targetName = executeMethod(text);
         } catch (Exception e) {
-            logger.error("语音文件生成失败");
-            throw new OperateException("语音文件生成失败","200003");
+            logger.error("语音文件生成失败,第二次尝试",e);
         }
 
-        File target = new File(targetName);
-        if(target.length() <= 1000){
+        File target = null;
+        if(StringUtils.isBlank(targetName) || new File(targetName).length() <= 1000){
 
                 redisUtil.del(CommonConstant.ALIYUN_TOKEN);
                 try {
                     targetName = executeMethod(text);
                 } catch (Exception e) {
-                    logger.error("语音文件生成失败");
+                    logger.error("语音文件生成失败",e);
                     throw new OperateException("语音文件生成失败","200003");
                 }
                 target = new File(targetName);
@@ -109,20 +116,12 @@ public class MainMethod {
         this.url = url;
     }
 
-    public String getPcmFilePrefix() {
-        return pcmFilePrefix;
+    public String getFilePrefix() {
+        return filePrefix;
     }
 
-    public void setPcmFilePrefix(String pcmFilePrefix) {
-        this.pcmFilePrefix = pcmFilePrefix;
-    }
-
-    public String getMp3FilePrefix() {
-        return mp3FilePrefix;
-    }
-
-    public void setMp3FilePrefix(String mp3FilePrefix) {
-        this.mp3FilePrefix = mp3FilePrefix;
+    public void setFilePrefix(String filePrefix) {
+        this.filePrefix = filePrefix;
     }
 
     public String getAkId() {

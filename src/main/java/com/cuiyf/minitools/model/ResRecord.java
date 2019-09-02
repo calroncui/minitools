@@ -7,6 +7,9 @@ public class ResRecord {
     private String url;
     private String audioUrl;
 
+    public ResRecord() {
+    }
+
     public String getCreateTime() {
         return createTime;
     }
