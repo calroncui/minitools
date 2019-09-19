@@ -1,0 +1,20 @@
+
+text2speech:
+  appKey: **(阿里云智能语音服务)
+  url: wss://nls-gateway.cn-shanghai.aliyuncs.com/ws/v1
+  akId: **(阿里云智能语音服务)
+  akSecret: **(阿里云智能语音服务)
+  filePrefix: D:\audio
+logging:
+  classpath: logback.xml
+
+spring:
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+    password :
+    timeout: 3000
+server:
+  port: 7777
+
